@@ -1,8 +1,9 @@
 cardRow = document.getElementById("card-row")
 pages = document.getElementById("pages")
 
-let test_type = cardRow.attributes[2].value
+let test_type = cardRow.getAttribute("aria-label")
 let siteBasePath = window.SMP_BASEURL || ""
+let apiBaseUrl = window.SMP_API_BASEURL || "https://cloud.meshery.io"
 
 function withBasePath(path) {
   if (!path.startsWith("/")) {
@@ -11,21 +12,29 @@ function withBasePath(path) {
   return `${siteBasePath}${path}`
 }
 
-if(window.location.hash == "" )
-{
-  reloadFunction(1,"start")
+function getCurrentPage() {
+  let hash = window.location.hash.replace(/^#/, "")
+  let match = hash.match(/page=(\d+)/)
+
+  if (!match) {
+    return 1
+  }
+
+  let parsedPage = parseInt(match[1], 10)
+  return Number.isNaN(parsedPage) ? 1 : parsedPage
 }
 
-let URL = window.location.href
-let currentPage = parseInt(URL.slice(-1))
+let currentPage = getCurrentPage()
 
-if(currentPage==="t"){
-  currentPage = 1;
+if (window.location.hash === "") {
+  reloadFunction(1, "start")
 }
+
 function reloadFunction(page,status){
-  if(status=="start")
-  window.location.replace(`${location.origin}${withBasePath(`/dashboard/${test_type}`)}#page=${page}`)
-  else{
+  if(status=="start") {
+    window.location.replace(`${location.origin}${withBasePath(`/dashboard/${test_type}`)}#page=${page}`)
+    return
+  } else {
     window.location.replace(`${location.origin}${withBasePath(`/dashboard/${test_type}`)}#page=${page}`)
     window.location.reload()
   }
@@ -103,9 +112,12 @@ function createPagination(pages, page) {
 
 let loader = `<div class="spinnerContainer"><div class="spinner"></div></div>`;
 cardRow.innerHTML = loader;
-fetch(`https://cloud.meshery.io/api/performance/smp/profiles?page=${currentPage-1}`, { 
+fetch(`${apiBaseUrl}/api/performance/smp/profiles?page=${currentPage-1}`, {
     method: "GET"
   }).then(function(response) {
+    if (!response.ok) {
+      throw new Error(`Failed to load profiles: ${response.status}`)
+    }
     return response.json();
   }).then(function(data) {
     if(test_type=="all"){
@@ -250,4 +262,12 @@ fetch(`https://cloud.meshery.io/api/performance/smp/profiles?page=${currentPage-
   cardRow.innerHTML = content;
 }
 }
+  }).catch(function() {
+    cardRow.innerHTML = `
+      <div class="col-12">
+        <div class="alert alert-warning" role="alert">
+          Unable to load performance profiles right now.
+        </div>
+      </div>
+    `;
   })

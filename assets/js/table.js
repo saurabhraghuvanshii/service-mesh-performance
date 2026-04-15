@@ -1,11 +1,23 @@
 
 // tableBody = document.getElementById("table-body")
 tableContainer = document.getElementById("tableContainer")
-let URL = window.location.hash.substring(1)
-let profileId = URL.slice(0,36)
 let siteBasePath = window.SMP_BASEURL || ""
+let apiBaseUrl = window.SMP_API_BASEURL || "https://cloud.meshery.io"
 
-let currentPage = parseInt(URL.slice(42))
+function getHashParts() {
+  let hash = window.location.hash.replace(/^#/, "")
+  let parts = hash.split("?page=")
+  let parsedPage = parseInt(parts[1], 10)
+
+  return {
+    profileId: parts[0] || "",
+    currentPage: Number.isNaN(parsedPage) ? 1 : parsedPage
+  }
+}
+
+let hashParts = getHashParts()
+let profileId = hashParts.profileId
+let currentPage = hashParts.currentPage
 
 function withBasePath(path) {
   if (!path.startsWith("/")) {
@@ -95,9 +107,12 @@ function createPagination(pages, page,profileIds) {
 let loader = `<div class="spinnerContainer"><div class="spinner"></div></div>`;
 tableContainer.innerHTML = loader;
 
-fetch(`https://cloud.meshery.io/api/performance/smp/profiles/${profileId}/results?page=${currentPage-1}`, { 
+fetch(`${apiBaseUrl}/api/performance/smp/profiles/${profileId}/results?page=${currentPage-1}`, {
     method: "GET"
   }).then(function(response) {
+    if (!response.ok) {
+      throw new Error(`Failed to load profile results: ${response.status}`)
+    }
     return response.json();
   }).then(function(data) {
     let content = " "
@@ -148,4 +163,10 @@ fetch(`https://cloud.meshery.io/api/performance/smp/profiles/${profileId}/result
     `
     tableContainer.innerHTML = content;
   }
+  }).catch(function() {
+    tableContainer.innerHTML = `
+      <div class="alert alert-warning" role="alert">
+        Unable to load profile results right now.
+      </div>
+    `;
   })
