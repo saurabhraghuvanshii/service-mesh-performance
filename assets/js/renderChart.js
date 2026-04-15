@@ -7,9 +7,9 @@ function myRound(v, digits = 2) {
     return n < 10 ? "0" + n : n;
   }
   
-function formatDate(dStr) {
-  var d = new Date(dStr);
-  return (
+  function formatDate(dStr) {
+    var d = new Date(dStr);
+    return (
       d.getFullYear() +
       "-" +
       pad(d.getMonth() + 1) +
@@ -21,10 +21,8 @@ function formatDate(dStr) {
       pad(d.getMinutes()) +
       ":" +
       pad(d.getSeconds())
-  );
-}
-
-const apiBaseUrl = window.SMP_API_BASEURL || "https://cloud.meshery.io";
+    );
+  }
   
   /**
    * The Axes Definitions and labellers
@@ -644,7 +642,7 @@ const apiBaseUrl = window.SMP_API_BASEURL || "https://cloud.meshery.io";
   
     let cardTitle = document.getElementById("card-title")
   
-    fetch(`${apiBaseUrl}/api/performance/smp/profiles/${profileId}/results`, {
+    fetch(`https://cloud.layer5.io/api/performance/smp/profiles/${profileId}/results`, { 
       method: "GET"
     }).then(function(response) {
       return response.json();
@@ -699,7 +697,7 @@ window.addEventListener('load',function(){
       let profileId = URL.slice(0,36)
       let index = parseInt(URL.slice(37))
   
-    fetch(`${apiBaseUrl}/api/performance/smp/profiles/${profileId}/results`, {
+    fetch(`https://cloud.layer5.io/api/performance/smp/profiles/${profileId}/results`, { 
       method: "GET"
     }).then(function(response) {
       return response.json();
@@ -719,7 +717,7 @@ window.addEventListener('load',function(){
       let profileId = URL.slice(0,36)
       let index = parseInt(URL.slice(37))
   
-    fetch(`${apiBaseUrl}/api/performance/smp/profiles/${profileId}/results`, {
+    fetch(`https://meshery.layer5.io/api/performance/smp/profiles/${profileId}/results`, { 
       method: "GET"
     }).then(function(response) {
       return response.json();
